@@ -18,9 +18,9 @@
 </template>
 <script>
 
-import { Principal } from '@dfinity/principal';
-import { dip20 } from "@/utils/dip20";
-import { useAuthClient } from "@/utils/login_hooks";
+//import { Principal } from '@dfinity/principal';
+//import { dip20 } from "@/utils/dip20";
+//import { useAuthClient } from "@/utils/login_hooks";
 
 export default {
   name: 'mywallet',

@@ -11,7 +11,11 @@ import "@/assets/css/style.css";
 import "@/assets/css/responsive.css"; 
 
 
-import { Button, Dialog,Notification,Loading } from 'element-ui';
+import VueEllipseProgress from 'vue-ellipse-progress'; 
+Vue.use(VueEllipseProgress);
+
+// Vue.use(VueEllipseProgress, "vep"); you can define a name and use the plugin like <vep/>
+import { Button, Dialog, Loading } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(Button)
 Vue.use(Dialog)
