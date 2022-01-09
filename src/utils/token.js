@@ -6,7 +6,7 @@ export function getToken(key) {
 }
 // 2，设置localStorage方法
 export function setToken(key,token) {
-    window.localStorage.setItem(key, token)
+    window.localStorage.setItem(key, token) 
 }
 // 3，清除localStorage方法
 export function removeToken(key) {

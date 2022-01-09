@@ -2,14 +2,16 @@
   <div>
     <div class="maincontext">
       <div class="personbox"
-           v-for="item in stakeObjList">
-        <div class="sub_box vote_box"><img src="./imgs/vote.png"
-               style="width: 3em;"></div>
-        <div class="sub_box title_box">
-          <span style="padding:0 2em;">{{item.article.title}}</span>
+           v-for="item in earningObjList">
+        <div class="title_box">
+          <p style="font-size: 1.5em;">{{item.title}}</p>
+          <p>{{item.dt}}</p>
         </div>
         <div class="sub_box stake_box">
-          <span v-if>staked:{{item.stake}}</span>
+          <span v-if="item.bal >=0"
+                style="color:green;">+{{item.bal }}BAT</span>
+          <span v-if="item.bal < 0"
+                style="color:red;">{{item.bal }}BAT</span>
         </div>
       </div>
     </div>
@@ -20,20 +22,24 @@ import MyHeader from './myheader'
 import { stakeList } from "@/api/mine.js";
 
 export default {
-  name: 'Myvote',
+  name: 'Myearning',
   components: {
     MyHeader
   },
   async created () {
     // 页面一打开就去列表。
     if (this.$checkLogin()) {
-      let stakelistTmp = await stakeList();
-      this.stakeObjList = stakelistTmp.data.data;
+      console.log("login");
+      //let stakelistTmp = await stakeList();
+      //this.stakeObjList = stakelistTmp.data.data;
     } else { this.$router.push("/login"); }
   },
   data () {
     return {
-      stakeObjList: []
+      earningObjList: [{ "title": "read incentive", "dt": "2020-09-09 19:22:22", "bal": 20 }, { "title": "share incentive", "dt": "2020-09-09 19:22:22", "bal": 30 }, {
+        "title": "ecological development", "dt": "2020-09-09 19:22:22", "bal": 30
+      },
+      { "title": "invite incentive", "dt": "2020-09-09 19:22:22", "bal": +200 }, { "title": "vote stake", "dt": "2020-09-09 19:22:22", "bal": -1000 }]
     }
   }
 }
@@ -65,6 +71,8 @@ export default {
 }
 
 .title_box {
+  font-size: 1.5em;
+  padding-left: 1em;
   text-align: left;
   width: 60%;
   font-weight: 500;
@@ -72,10 +80,17 @@ export default {
   color: rgba(136, 136, 136, 1);
   justify-content: left;
 }
+.title_box p {
+  margin: 0;
+  padding: 0;
+}
 
 .stake_box {
   width: 30%;
-  font-size: 1rem;
+  font-size: 1.5rem;
+}
+.blue {
+  color: #11b4ff;
 }
 
 @media only screen and (max-width: 479px) {

@@ -11,7 +11,7 @@
                  :empty-thickness="1"
                  lineMode="in 45"
                  :legend="false"
-                 animation="default 400 100"
+                 animation="default 1000 100"
                  fontSize="1rem">
         >
         <img slot="legend-caption"
@@ -134,7 +134,7 @@
 <script>
 import { articleDetail, articleLike, articleDisLike } from "@/api/article.js";
 import { userBanllance, userTransferToBack } from "@/api/mine.js";
-import { getToken } from "@/utils/token.js";
+import { setToken, getToken } from "@/utils/token.js";
 import { Notification } from 'element-ui';
 import userTransfer from "@/utils/handleStake.js";
 import VueSlider from 'vue-slider-component'
@@ -162,6 +162,11 @@ export default {
     }
   },
   async created () {
+    //获取当前进度
+    let lastprocess = Number(getToken("readingProcess"))
+    if ((lastprocess !== undefined) || (lastprocess != null)) {
+      this.process = lastprocess
+    }
     // 页面一打开就去加载文章详情。
     let res = await articleDetail({
       art_id: this.$route.params.art_id
@@ -185,22 +190,18 @@ export default {
       //滚动条到底部的条件
       if (Math.abs(scrollTop - this.lastscroll) > 80) {
         this.lastscroll = scrollTop;
-        if (this.process < 80) {
-          this.process += 10;
-        }
-
-        while (this.process >= 80) {
-          this.process += 1
-          if (this.process >= 100) {
-            console.log("get reward")
-            this.process = 0
-            break
-          }
+        if (this.sec === 60) {
+          this.sec = 0;
+          return
         }
         this.sec += 1;
-        //this.process = (this.sec * 100) / 60;
+        this.process = (this.sec * 100) / 60;
       }
-
+      if (this.process >= 100) {
+        alert("get reward")
+        console.log("get reward")
+        this.process = 0
+      }
       if (scrollTop + windowHeight == scrollHeight) {
         //reach bottom
       }
@@ -211,6 +212,23 @@ export default {
       if (this.scrollTop > 10) {
         document.documentElement.scrollTop = 0
       }
+    },
+    //激活页面
+    handleActivate () {
+      // 监听页面是否是激活状态
+      var hiddenProperty = 'hidden' in document ? 'hidden' :
+        'webkitHidden' in document ? 'webkitHidden' :
+          'mozHidden' in document ? 'mozHidden' :
+            null;
+      if (!document[hiddenProperty]) {
+        setToken("readingProcess", this.process)
+        console.log('页面非激活');
+      } else {
+        var lastprocess = Number(getToken("readingProcess"))
+        this.process = lastprocess
+        console.log('页面激活')
+      }
+
     },
     follow () { },
     async like () {
@@ -281,10 +299,18 @@ export default {
   },
   mounted () {
     window.addEventListener('scroll', this.handleScroll, true)
+    window.addEventListener('visibilitychange', this.handleActivate, true)
+    //在页面刷新时将vuex里的信息保存到localStorage里
+    window.addEventListener("beforeunload", () => {
+      setToken("readingProcess", this.process)
+    })
   },
 
   destroyed () {
+    setToken("readingProcess", this.process)
     window.removeEventListener('scroll', this.handleScroll)
+    window.removeEventListener('visibilitychange', this.handleScroll)
+
   }
 }
 
@@ -295,11 +321,9 @@ export default {
   margin-bottom: 0 !important;
   border: none !important;
 }
-
 .social-area {
   display: inline-block;
 }
-
 .action {
   float: left;
 }
