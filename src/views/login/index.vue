@@ -1,140 +1,255 @@
 <template>
-    <div class="login">
-         <div class="selec_addr">
-            <h5>{{lodinginfo}}</h5>
+  <div class="login">
+
+    <div class="login-wrap"
+         v-show="showLogin">
+      <h3>登录</h3>
+      <p v-show="showTishi">{{tishi}}</p>
+      <el-form :model="loginForm"
+               status-icon
+               ref="loginForm"
+               label-width="30%"
+               class="demo-ruleForm">
+        <el-form-item prop="email"
+                      label="邮箱"
+                      :rules="[
+      { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+      { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
+    ]">
+          <el-input v-model="loginForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="密码"
+                      prop="pass"
+                      :rules="[ { required: true, message: '请输入密码', trigger: 'blur' } , ]">
+          <el-input type="password"
+                    v-model="loginForm.pass"
+                    autocomplete="off"></el-input>
+        </el-form-item>
+        <div class='btns'>
+
+          <el-button type="primary"
+                     @click="submitForm('ruleForm')">提交</el-button>
+          <el-button @click="resetForm('loginForm')">重置</el-button>
         </div>
-        <select v-model="selected" class="selectbox">
-            <option disabled value="">please select one account</option>
-            <option v-for="item in accList" v-bind:value="item.address" class="selectoption">
-                {{item.meta.name}}
-            </option>
-        </select>
-        <div class="selec_addr">
-            <h6>your address {{selected}}</h6>
-        </div>
-        <div>
-            <el-button type="primary" @click="saveAcc" class="savebutton">Login In</el-button>
-        </div>
+
+      </el-form>
+      <span v-on:click="ToRegister">没有账号？马上注册</span>
     </div>
+
+    <div class="register-wrap"
+         v-show="showRegister">
+      <h3>注册</h3>
+      <p v-show="showTishi">{{tishi}}</p>
+      <el-form :model="registerForm"
+               status-icon
+               ref="registerForm"
+               label-width="30%"
+               class="demo-ruleForm">
+        <el-form-item prop="email"
+                      label="邮箱"
+                      :rules="[
+      { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+      { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
+    ]">
+          <el-input v-model="registerForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="密码"
+                      prop="pass"
+                      :rules="[
+      { required: true, message: '请输入密码', trigger: 'blur' } 
+    ]">
+          <el-input type="password"
+                    v-model="registerForm.pass"
+                    autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="昵称"
+                      prop="name">
+          <el-input v-model="registerForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="邀请码"
+                      prop="invitecode">
+          <el-input v-model="registerForm.invitecode"></el-input>
+        </el-form-item>
+        <div class='btns'>
+          <el-button type="primary"
+                     @click="register()">提交</el-button>
+          <el-button @click="resetForm('registerForm')">重置</el-button>
+        </div>
+      </el-form>
+      <span v-on:click="ToLogin">已有账号？马上登录</span>
+    </div>
+  </div>
 </template>
-<script>
-import { userLogin } from "@/api/login.js";
-import { setToken, getToken } from "@/utils/token.js";
-import setup from '@/utils/polka.js'
-import { Notification } from 'element-ui';
-import { Loading } from 'element-ui';
-export default {
-    name: "login",
-    data() {
-        return {
-            isLoading: false,
-            accList: [],
-            selected: '',
-            loading: true,
-            lodinginfo: "Loading......"
-        }
-    },
-    async created() {
-        try {
-            const h = this.$createElement; 
-            this.accList = await setup()
-            if (this.accList == null || this.accList.length < 1) { 
-                var mes = "account list is null"
-                var options = {
-                    title: 'Aha ~',
-                    message: h('i', { style: 'color: teal;font-weight:700' }, mes)
-                }
-                Notification(options)
-            } 
-            this.lodinginfo = "Loading account success."
-        } catch (error) {
-            console.log("connect wallet fail", error)
-            this.lodinginfo = "Loading account fail."
-        } finally { 
-            this.isLoading = false
-        }
-    },
 
-    methods: {
-        async saveAcc() { 
-            const h = this.$createElement; 
-
-            let obj = this.accList.find((item) => { return item.address === this.selected });
-            if (obj) {
-                setToken("username", obj.meta.name)
-                setToken("bacaWallet", obj.address)
-            } else {
-                var mes = "please select one account"
-                var options = {
-                    title: 'Aha ~',
-                    message: h('i', { style: 'color: teal;font-weight:700' }, mes)
-                }
-                Notification(options)
-                return
-            } 
-
-            let res = await userLogin({ "address": obj.address,"name":obj.meta.name })
-            if (res.data && res.data.data.token) {
-                setToken("bacaToken", res.data.data.token)
-                var mes = "Login in seccuss"
-                var options = {
-                    title: 'Aha ~',
-                    message: h('i', { style: 'color: teal;font-weight:700' }, mes)
-
-                }
-                Notification(options) 
-                this.$router.back()
-            }
-
-
-        }
-    }
+<style>
+.btns {
+  padding-left: 3em;
+  margin-bottom: 1em;
 }
-</script>
-<style scoped>
+.demo-ruleForm {
+  padding-right: 3em;
+}
+.login-wrap {
+  text-align: center;
+}
+input {
+  display: block;
+  width: 250px;
+  height: 40px;
+  line-height: 40px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  outline: none;
+  border: 1px solid #888;
+  padding: 10px;
+  box-sizing: border-box;
+}
+p {
+  color: red;
+}
+button {
+  display: block;
+  width: 20%;
+  height: 40px;
+  line-height: 40px;
+  margin: 0 auto;
+  border: none;
+  background-color: #41b883;
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+span {
+  cursor: pointer;
+}
+span:hover {
+  color: #41b883;
+}
 .login {
-    width: 50%;
-    padding: 3em;
-    background-color: #e9e9e9;
-    margin:  auto;
-    margin-top:2em;
-    text-align: center; 
-    box-shadow: #d5d4d4 1px 1px 2px 2px;
+  width: 50%;
+  padding: 3em;
+  background-color: #e9e9e9;
+  margin: auto;
+  margin-top: 2em;
+  text-align: center;
+  box-shadow: #d5d4d4 1px 1px 2px 2px;
 }
-
-.selectbox {
-    text-align: center; 
-    border: 1px solid #d5d4d4;
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border-radius: 6px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    color: RGBA(102, 102, 102, 0.7);
-    cursor: pointer;
-    outline: none;
-    font-weight: 800;
-    height: 2.5em;
-    width: 80%
-}
-
-.selectoption {
-    text-align: center;
-}
-
-.selec_addr h6 {
-    margin: 1em;
-    color: RGBA(102, 102, 102, 0.7);
-}
- 
-
-
-::v-deep {
-    .el-input__inner {
-        background: white !important;
-        border-color: #DBDBDB;
-        color: #767676;
-    }
+@media only screen and (max-width: 700px) {
+  .login {
+    width: 100%;
+    padding: 1em;
+  }
+  button {
+    display: block;
+    width: 30%;
+    height: 40px;
+    line-height: 40px;
+    margin: 0 auto;
+    border: none;
+    background-color: #41b883;
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
 }
 </style>
+
+<script>
+//import { setCookie, getCookie } from '../../assets/js/cookie.js'
+
+
+export default {
+  data () {
+    return {
+      loginForm: {
+        email: '',
+        pass: ''
+      },
+      registerForm: {
+        email: '',
+        pass: '',
+        name: '',
+        invitecode: ''
+
+      },
+      /*rules: {
+        pass: [
+          { validator: validatePass, trigger: 'blur' }
+        ]
+      },*/
+
+
+      tishi: '',
+      showTishi: false,
+      showLogin: true,
+      showRegister: false,
+
+    }
+  },
+  mounted () {
+    /*if (getCookie('username')) {
+      this.$router.push('/home')
+    }*/
+  },
+  methods: {
+    resetForm (formName) {
+      this.$refs[formName].resetFields();
+    },
+    login () {
+      if (this.username == "" || this.password == "") {
+        alert("请输入用户名或密码")
+      } else {
+        let data = { 'username': this.username, 'password': this.password }
+        this.$http.post('http://localhost/vueapi/index.php/Home/user/login', data).then((res) => {
+          console.log(res)
+          if (res.data == -1) {
+            this.tishi = "该用户不存在"
+            this.showTishi = true
+          } else if (res.data == 0) {
+            this.tishi = "密码输入错误"
+            this.showTishi = true
+          } else if (res.data == 'admin') {
+            this.$router.push('/main')
+          } else {
+            this.tishi = "登录成功"
+            this.showTishi = true
+            //setCookie('username', this.username, 1000 * 60)
+            setTimeout(function () {
+              this.$router.push({ path: 'home', query: { id: 1 } })
+            }.bind(this), 1000)
+          }
+        })
+      }
+    },
+    ToRegister () {
+      this.showRegister = true
+      this.showLogin = false
+    },
+    ToLogin () {
+      this.showRegister = false
+      this.showLogin = true
+    },
+    register () {
+      if (this.newUsername == "" || this.newPassword == "") {
+        alert("请输入用户名或密码")
+      } else {
+        let data = { 'username': this.newUsername, 'password': this.newPassword }
+        this.$http.post('http://localhost/vueapi/index.php/Home/user/register', data).then((res) => {
+          console.log(res)
+          if (res.data == "ok") {
+            this.tishi = "注册成功"
+            this.showTishi = true
+            this.username = ''
+            this.password = ''
+            setTimeout(function () {
+              this.showRegister = false
+              this.showLogin = true
+              this.showTishi = false
+            }.bind(this), 1000)
+          }
+        })
+      }
+    }
+  }
+}
+</script>

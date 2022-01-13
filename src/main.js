@@ -15,21 +15,20 @@ import VueEllipseProgress from 'vue-ellipse-progress';
 Vue.use(VueEllipseProgress);
 
 // Vue.use(VueEllipseProgress, "vep"); you can define a name and use the plugin like <vep/>
-import { Button, Dialog, Loading } from 'element-ui';
+import { Button, Dialog, Loading,Form,FormItem,Input } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(Button)
 Vue.use(Dialog)
-//Vue.use(Notification)
+Vue.use(Form)
+Vue.use(FormItem)
+Vue.use(Input)
 Vue.use(Loading)
 
 // 导入判断用户是否登录插件
 import myPlugin from '@/utils/myPlugin.js'
 Vue.use(myPlugin)
  
-Vue.config.productionTip = false
-
- 
- 
+Vue.config.productionTip = false 
 
 new Vue({ 
     el: '#app',
