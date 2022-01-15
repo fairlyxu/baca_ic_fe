@@ -2,8 +2,9 @@
   <div v-loading="loading"
        element-loading-text="doing">
     <div class="fixed_div">
+
       <component :is="component"
-                 :progress="process"
+                 :progress="progress"
                  color="#f9a402"
                  empty-color="transparent"
                  :size="180"
@@ -13,11 +14,12 @@
                  :legend="false"
                  animation="default 1000 100"
                  fontSize="1rem">
-        >
+
         <img slot="legend-caption"
              height="80px"
              src="@/assets/img/bct.gif" />
       </component>
+
     </div>
 
     <!-- blog area Start -->
@@ -140,7 +142,7 @@ import userTransfer from "@/utils/handleStake.js";
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/antd.css'
 import { Loading } from 'element-ui';
-
+import Interval from "@/utils/interval";
 
 export default {
   name: 'Detail',
@@ -156,16 +158,32 @@ export default {
       min: 1,
       max: 100,
       loading: false,
-      process: 0,
-      lastscroll: 0,
-      sec: 0
+      sec: 0,
+      progress: 0,
+      activate: false
+    }
+  },
+  watch: {
+    activate (newVal, oldVal) {
+      //console.log(`activate changed: ${oldVal} to ${newVal}`);
+      var that = this
+      if (newVal == true && oldVal == false) {
+        Interval.run(that)
+      }
+    },
+    progress (newVal, oldVal) {
+      //console.log(`progress changed: ${oldVal} to ${newVal}`);
+      if (newVal === 100) {
+        //Interval.stop()
+        alert("get reward")
+      }
     }
   },
   async created () {
     //获取当前进度
-    let lastprocess = Number(getToken("readingProcess"))
-    if ((lastprocess !== undefined) || (lastprocess != null)) {
-      this.process = lastprocess
+    let lastprogress = Number(getToken("readingProgress"))
+    if ((lastprogress !== undefined) || (lastprogress != null)) {
+      this.progress = lastprogress
     }
     // 页面一打开就去加载文章详情。
     let res = await articleDetail({
@@ -180,38 +198,16 @@ export default {
   },
   methods: {
     handleScroll () {
-      this.scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
-      //变量scrollTop是滚动条滚动时，距离顶部的距离
-      var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      //变量windowHeight是可视区的高度
-      var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
-      //变量windowHeight是可视区的高度
-      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      //滚动条到底部的条件
-      if (Math.abs(scrollTop - this.lastscroll) > 80) {
-        this.lastscroll = scrollTop;
-        if (this.sec === 60) {
-          this.sec = 0;
-          return
-        }
-        this.sec += 1;
-        this.process = (this.sec * 100) / 60;
-      }
-      if (this.process >= 100) {
-        alert("get reward")
-        console.log("get reward")
-        this.process = 0
-      }
-      if (scrollTop + windowHeight == scrollHeight) {
-        //reach bottom
-      }
-
+      this.activate = true
     },
-    // 滚动条回到顶部
-    backTop () {
-      if (this.scrollTop > 10) {
-        document.documentElement.scrollTop = 0
+    runTimer () {
+      if (this.sec === 60) {
+        this.sec = 0;
+        this.progress = (this.sec * 100) / 60;
+        return;
       }
+      this.sec += 2;//控制速度
+      this.progress = (this.sec * 100) / 60;
     },
     //激活页面
     handleActivate () {
@@ -221,14 +217,13 @@ export default {
           'mozHidden' in document ? 'mozHidden' :
             null;
       if (!document[hiddenProperty]) {
-        setToken("readingProcess", this.process)
+        setToken("readingProgress", this.progress)
         console.log('页面非激活');
       } else {
-        var lastprocess = Number(getToken("readingProcess"))
-        this.process = lastprocess
+        var lastprogress = Number(getToken("readingProgress"))
+        this.progress = lastprogress
         console.log('页面激活')
       }
-
     },
     follow () { },
     async like () {
@@ -298,16 +293,18 @@ export default {
     }
   },
   mounted () {
+    Interval.addTask(this.runTimer);
+    var that = this
+    Interval.run(that)
     window.addEventListener('scroll', this.handleScroll, true)
     window.addEventListener('visibilitychange', this.handleActivate, true)
     //在页面刷新时将vuex里的信息保存到localStorage里
     window.addEventListener("beforeunload", () => {
-      setToken("readingProcess", this.process)
+      setToken("readingProgress", this.progress)
     })
   },
-
   destroyed () {
-    setToken("readingProcess", this.process)
+    setToken("readingProgress", this.progress)
     window.removeEventListener('scroll', this.handleScroll)
     window.removeEventListener('visibilitychange', this.handleScroll)
 

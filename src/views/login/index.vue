@@ -22,7 +22,7 @@
                       prop="pass"
                       :rules="[ { required: true, message: '请输入密码', trigger: 'blur' } , ]">
           <el-input type="password"
-                    v-model="loginForm.pass"
+                    v-model="loginForm.password"
                     autocomplete="off"></el-input>
         </el-form-item>
         <div class='btns'>
@@ -59,7 +59,7 @@
       { required: true, message: '请输入密码', trigger: 'blur' } 
     ]">
           <el-input type="password"
-                    v-model="registerForm.pass"
+                    v-model="registerForm.password"
                     autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="昵称"
@@ -155,35 +155,27 @@ span:hover {
 </style>
 
 <script>
+
 //import { setCookie, getCookie } from '../../assets/js/cookie.js'
-
-
+import { login, register } from "@/api/login"
 export default {
   data () {
     return {
       loginForm: {
         email: '',
-        pass: ''
+        password: ''
       },
       registerForm: {
         email: '',
-        pass: '',
+        password: '',
         name: '',
         invitecode: ''
-
       },
-      /*rules: {
-        pass: [
-          { validator: validatePass, trigger: 'blur' }
-        ]
-      },*/
-
 
       tishi: '',
       showTishi: false,
       showLogin: true,
       showRegister: false,
-
     }
   },
   mounted () {
@@ -195,31 +187,19 @@ export default {
     resetForm (formName) {
       this.$refs[formName].resetFields();
     },
-    login () {
-      if (this.username == "" || this.password == "") {
-        alert("请输入用户名或密码")
-      } else {
-        let data = { 'username': this.username, 'password': this.password }
-        this.$http.post('http://localhost/vueapi/index.php/Home/user/login', data).then((res) => {
-          console.log(res)
-          if (res.data == -1) {
-            this.tishi = "该用户不存在"
-            this.showTishi = true
-          } else if (res.data == 0) {
-            this.tishi = "密码输入错误"
-            this.showTishi = true
-          } else if (res.data == 'admin') {
-            this.$router.push('/main')
-          } else {
-            this.tishi = "登录成功"
-            this.showTishi = true
-            //setCookie('username', this.username, 1000 * 60)
-            setTimeout(function () {
-              this.$router.push({ path: 'home', query: { id: 1 } })
-            }.bind(this), 1000)
-          }
-        })
-      }
+    async login () {
+      let datas = this.loginForm
+      let res = await login(datas);
+      console.log(res)
+      this.tishi = "登陆成功"
+      this.showTishi = true
+      this.tishi = "登录成功"
+      this.showTishi = true
+      //setCookie('username', this.username, 1000 * 60)
+      setTimeout(function () {
+        this.$router.push({ path: '/', query: { id: 1 } })
+      }.bind(this), 1000)
+
     },
     ToRegister () {
       this.showRegister = true
@@ -229,26 +209,19 @@ export default {
       this.showRegister = false
       this.showLogin = true
     },
-    register () {
-      if (this.newUsername == "" || this.newPassword == "") {
-        alert("请输入用户名或密码")
-      } else {
-        let data = { 'username': this.newUsername, 'password': this.newPassword }
-        this.$http.post('http://localhost/vueapi/index.php/Home/user/register', data).then((res) => {
-          console.log(res)
-          if (res.data == "ok") {
-            this.tishi = "注册成功"
-            this.showTishi = true
-            this.username = ''
-            this.password = ''
-            setTimeout(function () {
-              this.showRegister = false
-              this.showLogin = true
-              this.showTishi = false
-            }.bind(this), 1000)
-          }
-        })
-      }
+    async register () {
+      let datas = this.registerForm
+      let res = await register(datas);
+
+      this.tishi = "注册成功"
+      this.showTishi = true
+      setTimeout(function () {
+        this.showRegister = false
+        this.showLogin = true
+        this.showTishi = false
+      }.bind(this), 1000)
+
+
     }
   }
 }
